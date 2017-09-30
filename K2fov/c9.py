@@ -5,6 +5,7 @@ from __future__ import print_function
 import os
 import json
 import numpy as np
+import sys
 
 from . import PACKAGEDIR, logger, getKeplerFov
 
@@ -64,6 +65,49 @@ def inMicrolensRegion(ra_deg, dec_deg, padding=0):
         return maskInMicrolensRegion(ch, col, row, padding=padding)
     except ValueError:
         return False
+
+
+def inMicrolensRegionFile(file_name=None):
+    """Checks if sky coordinates from file fall on the K2C9 superstamp.
+
+    Parameters
+    ----------
+    file_name : str
+        Name of the file with RA and Dec [both in degrees] in the first two 
+        columns. If not given, then sys.argv[1] is assumed.
+
+    Returns
+    -------
+    onMicrolensRegion : list
+        List of bool values: `True` if the given coordinates are within 
+        the K2C9 microlens superstamp. If `file_name` was `None` then input 
+        coordinates and onMicrolensRegion are printed.
+    """
+    fov = getKeplerFov(9)
+    if file_name is None:
+        file_name = sys.argv[1]
+        print_out = True
+    else:
+        print_out = False
+        onMicrolensRegion = []
+
+    with open(file_name) as file_:
+        for line in file_.readlines():
+            (ra, dec) = line.split()[:2]
+            try:
+                (ch, col, row) = fov.getChannelColRow(float(ra), float(dec),
+                                            allowIllegalReturnValues=False)
+                onSuperstamp = maskInMicrolensRegion(ch, col, row, padding=0)
+            except ValueError:
+                onSuperstamp = False
+
+            if print_out:
+                print("{:} {:} {:}".format(ra, dec, onSuperstamp))
+            else:
+                onMicrolensRegion.append(onSuperstamp)
+    
+    if not print_out:
+        return onMicrolensRegion
 
 
 def pixelInMicrolensRegion(ch, col, row):

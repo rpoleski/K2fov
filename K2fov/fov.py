@@ -289,7 +289,7 @@ class KeplerFov():
         return (col, row)
 
     def colRowIsOnSciencePixelList(self, col, row, padding=DEFAULT_PADDING):
-        """similar to colRowIsOnSciencePixelList() but takes lists as input"""
+        """similar to colRowIsOnSciencePixel() but takes lists as input"""
         out = np.ones(len(col), dtype=bool)
         col_arr = np.array(col)
         row_arr = np.array(row)
